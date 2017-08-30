@@ -49,6 +49,7 @@
                     '<div class="text" id="remitDate"  style="height:25px">'+ item.remitDate +'</div>'+
                     '<div class="text" id="limitedDate"  style="height:25px">'+ item.limitedDate +'</div>'+
                     '<div class="text" id="totalScale"  style="height:25px">'+ item.totalScale +'w</div>'+
+                    '<button class="text" id='+item._id +' onclick="deleteProject(this)" style="height:25px; margin:5">'+ "删除项目" +'</button>'+
                     '<button class="text" id='+item._id +' onclick="enterEditUser(this)" style="height:25px; margin:5">'+ "添加投资者" +'</button>'+
                 '</div>'+
             '</div>'
@@ -56,6 +57,38 @@
             ;
         })
         document.getElementsByClassName("container")[0].innerHTML = projectHtml;
+    }
+
+    function deleteProject(obj) {
+        $.ajax({
+          type: "DELETE",
+          url: "http://localhost:3000/api/projects?_id=" + obj.id,
+          success:(data,textStatus)=>{
+                if (data.status) {
+                    removeProjectDom(obj.id)
+                    deleteInvestmentByProjectId(obj.id)
+                }
+          },
+          error: function(XMLHttpRequest, textStatus, errorThrown){
+          }
+      });
+    }
+
+    function deleteInvestmentByProjectId(projectId) {
+        $.ajax({
+          type: "DELETE",
+          url: "http://localhost:3000/investment/investment?projectId=" + projectId,
+          success:(data,textStatus)=>{
+                if (data.status) {
+                }
+          },
+          error: function(XMLHttpRequest, textStatus, errorThrown){
+          }
+      });
+    }
+
+    function removeProjectDom(id) {
+        document.getElementById(id).remove()
     }
 
     function showUsers(obj){
@@ -98,16 +131,44 @@
                     dom.remove()
                 }else{
                     document.getElementById(investments[0].projectId).innerHTML += (
-                        '<div id='+ "user_" +investment._id+' style="display: flex; justify-content: center">'+
+                        '<div id='+ "user_" +investment._id+' style="display: flex; justify-content: center; margin:5px 0;">'+
                             '<div style="flex:1">   </div>'+
                             '<div style="flex:1" class="userName" data-UserId='+investment.userId+' onclick="enterUserDetail(this)"> <font color=blue>'+ investment.userName +'</font></div>'+
-                            '<div style="flex:1"class="userName"> '+ investment.investmentMmount +' </div>'+
-                            '<div style="flex:1"class="userName"> '+ investment.remitDate +' </div>'+
+                            '<div style="flex:1" class="investmentMmount"> '+ investment.investmentMmount +' </div>'+
+                            '<div style="flex:1" class="remitDate"> '+ investment.remitDate +' </div>'+
+                            '<div style="display:flex; flex:1; justify-content: center" class="userName"> '+
+                            '<button class="userName" data-investmentId='+investment._id+' data-UserId='+investment.userId+' data-ProjectId='+investment.projectId+' onclick="deleteInvestor(this)">  删除投资者 </button> </div>'+
                         '</div>'
                     )
                 }
             })
     }
+
+    function deleteInvestor(obj) {
+        var userId = obj.dataset.userid;
+        var projectId = obj.dataset.projectid;
+        var investmentId = obj.dataset.investmentid;
+        $.ajax({
+          type: "DELETE",
+          url: "http://localhost:3000/investment/investment?projectId=" + projectId+ "&userId=" + userId ,
+          complete:function(XMLHttpRequest, textStatus){
+
+          },
+          success:(data,textStatus)=>{
+                if (data.status) {
+                    removeDeletedUser("user_"+investmentId)
+                }
+
+          },
+          error: function(XMLHttpRequest, textStatus, errorThrown){
+          }
+      });
+    }
+
+    function removeDeletedUser(investmentId) {
+        document.getElementById(investmentId).remove()
+    }
+
     function enterUserDetail(obj) {
         var userId = obj.dataset.userid;
         window.location.href= 'userDetail.html?userId='+ userId;

@@ -42,6 +42,7 @@
         '<div class="text" id="phoneNumber" style="height:25px; flex:1"> 手机号</div>'+
         '<div class="text" id="wechatNumber"  style="height:25px; flex:1">  微信号</div>'+
         '<div class="text" id="address"  style="height:25px; flex:1">  地址</div>'+
+        '<div class="text" id="address"  style="height:25px; flex:1"> </div>'+
         '</div>';
         inputData.map((item, index)=>{
             userstHtml += (
@@ -53,12 +54,46 @@
                     '<div class="text" id="phoneNumber"  style="height:25px; flex:1">'+ item.phoneNumber +'</div>'+
                     '<div class="text" id="wechatNumber"  style="height:25px; flex:1">'+ item.wechatNumber +'</div>'+
                     '<div class="text" id="address"  style="height:25px; flex:1">'+ item.address +'</div>'+
+                    '<div class="text" id="address"  style="height:25px; flex:1">'+     '<button class="userName" data-UserId='+item._id+ ' onclick="deleteUser(this)">  删 除 用 户 </button>'+'</div>'+
                 '</div>'+
+
             '</div>'
             )
             ;
         })
         document.getElementsByClassName("container")[0].innerHTML = userstHtml;
+    }
+
+    function deleteUser(obj) {
+        var userId = obj.dataset.userid;
+        $.ajax({
+          type: "DELETE",
+          url: "http://localhost:3000/user/user?_id="+ userId ,
+          success:(data,textStatus)=>{
+                if (data.status) {
+                    removeDeletedUser(userId)
+                    deleteInvestmentByUserId(userId)
+                }
+          },
+          error: function(XMLHttpRequest, textStatus, errorThrown){
+          }
+      });
+    }
+    function deleteInvestmentByUserId(userId) {
+        $.ajax({
+          type: "DELETE",
+          url: "http://localhost:3000/investment/investment?userId=" + userId,
+          success:(data,textStatus)=>{
+                if (data.status) {
+                }
+          },
+          error: function(XMLHttpRequest, textStatus, errorThrown){
+          }
+      });
+    }
+
+    function removeDeletedUser(userId) {
+        document.getElementById(userId).remove()
     }
 
     function showUsers(obj){
